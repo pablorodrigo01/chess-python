@@ -67,6 +67,7 @@ def process_move():
             update_board()
             check_game_status()
             show_possible_moves()
+            evolve_pawns()
         else:
             print("Movimento inválido. Tente novamente.")
     except ValueError:
@@ -102,6 +103,39 @@ def show_possible_moves():
         line_length += len(move_text) + 2
 
     moves_label.config(text=moves_text)
+
+# Função para evoluir os peões no tabuleiro
+def evolve_pawns():
+    for col in range(8):
+        if board.piece_type_at(chess.square(col, 0)) == chess.PAWN:
+            if chess.square_name(chess.square(col, 0)) not in move_entry.get():
+                promotion_window = tk.Toplevel(root)
+                promotion_window.title("Promoção do Peão")
+
+                piece_choice = tk.StringVar()
+                piece_choice.set("queen")
+
+                tk.Label(promotion_window, text="Escolha a peça para a promoção:", font=("Arial", 14)).pack(pady=10)
+                tk.Radiobutton(promotion_window, text="Rainha", variable=piece_choice, value="queen").pack()
+                tk.Radiobutton(promotion_window, text="Torre", variable=piece_choice, value="rook").pack()
+                tk.Radiobutton(promotion_window, text="Bispo", variable=piece_choice, value="bishop").pack()
+                tk.Radiobutton(promotion_window, text="Cavalo", variable=piece_choice, value="knight").pack()
+
+                tk.Button(promotion_window, text="Confirmar", font=("Arial", 14), command=lambda col=col, choice=piece_choice: promote_pawn(col, choice.get(), promotion_window)).pack(pady=10)
+
+# Função para realizar a promoção do peão
+def promote_pawn(col, piece_type, window):
+    piece_mapping = {
+        "queen": chess.QUEEN,
+        "rook": chess.ROOK,
+        "bishop": chess.BISHOP,
+        "knight": chess.KNIGHT
+    }
+
+    move = chess.Move(chess.square(col, 0), chess.square(col, 1), promotion=piece_mapping[piece_type])
+    board.push(move)
+    update_board()
+    window.destroy()
 
 # Criação dos números e letras nos cantos do tabuleiro
 for i in range(8):
